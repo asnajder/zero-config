@@ -251,6 +251,7 @@ Reference my SV08 guide here, but **NOTE** that there are some significant chang
 https://github.com/asnajder/sv08-config/blob/main/README.md  
 
 -No need to edit `ldc1612.py`, it seems to work fine with div=2
+
 -You can remove `reg_drive_current: 22` from `[probe_eddy_current my_eddy_probe]`, we will auto calibrate
 
 Additional short form steps:
