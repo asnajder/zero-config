@@ -218,7 +218,7 @@ To:
 Note, this will make Kalico or Klipper repo Dirty.  
 Thanks to wildBill on the discord for this info.  
 
-2. Use STM32CubeProgrammer to flash the `stm32h750_katapult.bin` file to your mainboard. Turn off your printer (unplug it too, just in case), hook your st-link up to the boards pins, other end to your computer, full chip erase, open file -> use stm32h750_katapult.bin, "Download" will write the file
+2. Use STM32CubeProgrammer to flash the `stm32h750_katapult.bin` file to your mainboard (found [here](./sovol_zero-recovery_files/stm32h750_katapult.bin)). Turn off your printer (unplug it too, just in case), hook your st-link up to the boards pins, other end to your computer, full chip erase, open file -> use stm32h750_katapult.bin, "Download" will write the file
 
 3. Upon boot, you can verify with `ls /dev/serial/by-id`, should see something like `usb-katapult_stm32h750xx_1C0027000651333233353131-if00`
 
@@ -306,7 +306,7 @@ https://canbus.esoterical.online/toolhead_flashing.html
 
 ## If something goes wrong
 
-I have the files uploaded in ____, each file can be flashed using st-link, which gets you back to Sovol firmware.
+I have the files uploaded [here](./sovol_zero-recovery_files), each file can be flashed using st-link, which gets you back to Sovol firmware.
 Reference Rappetor's guide Step 6/Step 7 to get you through it.
 
 ---
