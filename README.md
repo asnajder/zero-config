@@ -1,14 +1,46 @@
 # Mainline Sovol Zero (Klipper, Armbian Trixie)
 
-Special thanks to: Teapot-Apple, matt73210, Atomique13, jedi 2^10, wildBill, Rappetor, and others of the discord coming together to share information!
+Special thanks to: Teapot-Apple, matt73210, Atomique13, jedi 2^10, wildBill, Rappetor, vvuk and others of the discord coming together to share information!
+
+## Overview
+
+- This guide installs and configures Sovol Zero on Armbian Trixie with Klipper, Moonraker, Mainsail, and Crowsnest.
+- Covers CAN bus setup, flashing mainboard/toolhead/chamber, eddy probe calibration, and post-install tuning.
+- Assumes you are comfortable with Linux shell commands, systemd services, and basic electrical safety.
+
+## Table of Contents
+
+- [Prerequisites](#prerequisites)
+- [Safety & Warnings](#safety--warnings)
+- [Initial Setup](#initial-setup)
+- [Installing Stuff](#installing-stuff)
+- [Set up CAN](#set-up-can)
+- [Multiple Ways to Flash Mainboard](#multiple-ways-to-flash-mainboard)
+- [Make Klipper Configs for Toolhead and Chamber Heater](#make-klipper-configs-for-toolhead-and-chamber-heater)
+- [If something goes wrong](#if-something-goes-wrong)
+- [Finishing Up](#finishing-up)
+
+---
+
+## Prerequisites
+
+- 32GB eMMC (stock Sovol 8GB will NOT work).
+- Armbian Imager on a host PC.
+- USB keyboard + HDMI monitor (or SSH over Ethernet).
+- ST-LINK adapter (for method two) and basic knowledge of flashing STM32 if you choose this path.
+- Backup of any existing Klipper configs, Moonraker database, G-code files, and timelapses.
+
+## Safety & Warnings
+
+- Power off and unplug the printer before touching electronics or swapping the eMMC..
 
 ---
 
 ## Initial Setup
 
 1. Backup your config  
-2. Download Armbian Imager, insert your 32GB EMMC (note that 8GB will NOT work), Select BTT (BIQU) Manufacturer, Select BigTreeTech CB1 Board, Select Minimal tab, then Armbian <release date> Trixie cli, then Erase and Flash  
-3. On the newly flashed eMMC, edit /boot/armbianEnv.txt, COPY your `rootdev=UUID=` (for example, save this line: `rootdev=UUID=938afde5-6689-4a1a-a044-680f6247d523` NOTE that your UUID will be unique to you, and you are copying the NEW UUID, not the old eMMc UUID!) then replace everything else with:  
+2. Download Armbian Imager, insert your 32GB EMMC (note that Sovol stock 8GB will NOT work), Select BTT (BIQU) Manufacturer, Select BigTreeTech CB1 Board, Select Minimal tab, then Armbian <release date> Trixie cli, then Erase and Flash  
+3. On the newly flashed eMMC, boot partition,  edit /boot/armbianEnv.txt, COPY your `rootdev=UUID=` (for example, save this line: `rootdev=UUID=938afde5-6689-4a1a-a044-680f6247d523` NOTE that your UUID will be unique to you, and you are copying the NEW UUID, not the old eMMc UUID!) then replace everything else with:  
 ```
 verbosity=1
 bootlogo=false
@@ -56,13 +88,14 @@ ljg-dev (https://github.com/ljg-dev/sovol-sv08-mainline/tree/main)
 
 1. Via KIAUH, install Klipper, Moonraker, Mainsail, and Crowsnest  
 
-Reboot after Crowsnest
+- Reboot after Crowsnest
+- Optionally install `KIAUH main menu -> Advanced -> Extra Dependencies -> [Input Shaper]`
+- Install dependencies:
+  - `sudo apt install python3-serial -y`
+  - `~/klippy-env/bin/pip install scipy` (needed for eddy probe)
 
-I also installed `KIAUH main menu -> Advanced -> Extra Dependencies: -> [Input Shaper]`  
-
-Note you will also need `python3-serial` (`sudo apt install python3-serial`) and to do `~/klippy-env/bin/pip install scipy` (scipy is used for eddy we set up later)
-
-3. Install moonraker-timelapse:  
+2. Install moonraker-timelapse:
+  
 ```
 cd ~/
 git clone https://github.com/mainsail-crew/moonraker-timelapse.git
@@ -90,12 +123,12 @@ In Orca (or your preferred slicer) add `TIMELAPSE_TAKE_FRAME` to:
 
 ## Set up CAN
 
-1. It should be, but check that this service is "loaded active running"  
+1. It should be, but check that this service is "loaded active running"
 `systemctl | grep systemd-networkd`
 
 If not, `sudo systemctl enable systemd-networkd`, then `sudo systemctl start systemd-networkd`, then `sudo systemctl disable systemd-networkd-wait-online.service` then check again that it is running  
 
-3. Configure the txqueuelen for can0:  
+2. Configure the txqueuelen for can0:
 ```
 echo -e 'SUBSYSTEM=="net", ACTION=="change|add", KERNEL=="can*"  ATTR{tx_queue_len}="128"' | sudo tee /etc/udev/rules.d/10-can.rules > /dev/null
 ```  
