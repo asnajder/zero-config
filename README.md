@@ -357,7 +357,7 @@ It is recommended to calibrate your eddy at bed temp that you most commonly use,
 Reference my SV08 guide here for general instructions, but **NOTE** that there are some significant changes:  
 https://github.com/asnajder/sv08-config/blob/main/README.md
 
-And my zero specific eddy config I suggest you use is found in this repo under `sovol_eddy.cfg`  
+And my zero specific eddy config I suggest you use is found in this repo under `sovol_eddy.cfg`, note, ensure you use software I2C, hardware will not work (if you use my config, it's set up for software I2C)  
 
 -No need to edit `ldc1612.py`, it seems to work fine with div=2
 
