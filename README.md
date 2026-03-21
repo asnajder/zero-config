@@ -1,6 +1,6 @@
 # Mainline Sovol Zero (Klipper, Armbian Trixie)
 
-Special thanks to: Leoboi420, Teapot-Apple, matt73210, Atomique13, jedi 2^10, wildBill, Rappetor, vvuk and others of the discord coming together to share information!
+Special thanks to: Leoboi420, Teapot-Apple, matt73210, Atomique13, J&B ,jedi 2^10, wildBill, Rappetor, vvuk and others of the discord coming together to share information!
 
 ## Overview
 
@@ -40,7 +40,7 @@ Special thanks to: Leoboi420, Teapot-Apple, matt73210, Atomique13, jedi 2^10, wi
 
 ## Initial Setup
 
-1. Backup your config  
+1. Backup your  and old stock emmc  
 2. Download Armbian Imager, insert your 32GB eMMC into the eMMC reader (note that Sovol stock 8GB eMMC will NOT work), Select BTT (BIQU) Manufacturer, Select BigTreeTech CB1 Board, Select Minimal tab, then Armbian <release date> Trixie cli, then Erase and Flash  
 3. On the newly flashed eMMC, boot partition,  edit /boot/armbianEnv.txt, COPY your `rootdev=UUID=` (for example, save this line: `rootdev=UUID=938afde5-6689-4a1a-a044-680f6247d523` NOTE that your UUID will be unique to you, and you are copying the NEW UUID, not the old eMMc UUID!) then replace everything else with:  
 ```
@@ -59,7 +59,7 @@ usbstoragequirks=0x2537:0x1066:u,0x2537:0x1068:u
 You can fix the partition size now if you have access to another linux host:  
 `sudo fdisk /dev/<device> then e, 2, <enter>, w`  
 
-If not, I believe it will do it on first boot.  
+If not, I it will do it on first boot.  
 
 **Note:** On Mac you’ll need a VM and to share the EMMC drive to it after flashing- you just need this VM to access the file system on your EMMC, so you can use UTM and pick an easy to setup / use Linux VM (Matt suggested: Debian 11 xfce or something easy)
 
@@ -172,7 +172,7 @@ Note the following:
 - sovol hardcodes the UUIDs for mainboard/toolhead/chamber heater  
 - after flashing, the UUIDs WILL change  
 
-6. `sudo service klipper stop`, then run `python3 ~/katapult/scripts/flashtool.py -i can0 -q` and SAVE THE OUTPUT.  
+6. `sudo service klipper stop`, then run `~/katapult/scripts/flashtool.py -q` and SAVE THE OUTPUT.  
 
 This was my output (I have a chamber heater, so we see 3, if you don't have it, you'll see 2):  
 ```
@@ -190,33 +190,46 @@ You should see your CANBUS devices here, if you don't, something above was done 
 
 ---
 
-## Multiple Ways to Flash Mainboard
+[Katapult and Klipper firmwares](./menuconfig/bins)
 
-> [!WARNING]
-> There are two methods going forward to flash your mainboard.
-> 
-> **Method One** is using Sovol's 128KiB offset (which technically we are not sure how it works, since the chip only has ̶1̶2̶8̶K̶i̶B̶)
-> 
-> We found out via brute force and unorthodox methods that the MCU actually appears to have 2MB flash and is likely an STM32H743 variant, not H750.
-> 
-> **Method Two** is using an ST-LINK (or possibly in the future, command line) to flash a 32KiB offset Katapult bootloader, then from command line, flashing Klipper
->
-> **Optional:** Deployer firmwares [katapult_deployer](./menuconfig/katapult_deployer) are intended to be flashed over the stock Sovol bootloader. Do not use this as a standalone or with ST-LINK. Those expect you to flash Klipper firmware immediately after the deployer is flashed.This is optional but recommended.
-> 
-> It is up to you to determine which method you think is right and what you want to do. I have personally tested both options and they both work. You can use the firmware bins inside [klipper](./menuconfig/klipper) if you need to.
+Katapult
 
-### Method One
+Deployer bins like "Deployer_Zero_Host_H743_128kb" are intended to be flashed over the stock Sovol bootloader via flashtool.py . Do not use this as a standalone or with ST-LINK. Those expect you to flash Klipper firmware immediately after the deployer is flashed.This is optional but highly recommended.
+
+Katapult bins like "Katapult_Zero_Host_H743_128kb" are intended to be flashed with ST-LINK.
+
+Klipper
+
+Both Host and Toolhead Klipper bins are intended to be flashed via flashtool.py .
+
+If you want to generate those yourself you have the settings down.
+
+## Flash Mainboard
+
+Sovol's bootloader uses 128KiB offset (which technically we are not sure how it works, since the chip only has ~~128KiB~~ of flash)
+
+We found out via brute force and unorthodox methods that the MCU actually appears to have 2MB flash and is likely an STM32H743 variant, not H750.
+
+Flash Katapult_Zero_Host_H743_128kb.bin with st-link or use the flashtool.py and Deployer_Zero_Host_H743_128kb.
+
+~/katapult/scripts/flashtool.py -f Deployer_Zero_Host_H743_128kb.bin  -u 4bc297a772bc [Replace with your UUID for Host]
+
+~/katapult/scripts/flashtool.py -f Klipper_Zero_Host_H743_128kb.bin  -d /dev/ttyACM0 
 
 **Mainboard**
-```
+
 make menuconfig reference:
+```
 STM32H743
-128KiB bootloader offset
-Clock Reference: 25 MHz crystal
-USB to CAN bus bridge (USB on PA11/PA12)
-CAN bus on PB8/PB9
+128KiB deployment offset [Katapult optional]
+25 MHz crystal clock
+USB to CAN bus bridge (USB on PA11/PA12) [Klipper]
+<OR>
+USB on PA11/PA12 [Katapult]
+CAN bus on PB8/PB9 [Klipper]
 GPIO pins to set at micro-controller startup: !PE11,!PB0
-These are the aux and exhaust fans. If this isn't set, both of these will come on full blast at boot until Kalico takes control of the board
+
+(These are the aux and exhaust fans. If this isn't set, both of these will come on full blast at boot until Klipper takes control the board)
 ```
 Credit for this info:  
 Vlad (vvuk)  
@@ -227,89 +240,33 @@ https://github.com/vvuk/printer-configs/wiki/Kalico-on-the-Sovol-Zero
 It will save the firmware to `~/klipper/out/klipper.bin`  
 
 3. Flash your mainboard:  
-`sudo service klipper stop`, then `python3 ~/katapult/scripts/flashtool.py -i can0 -q`, this lists all CANBUS IDs, in my case mainboard was `0d1445047cdd`  
+`sudo service klipper stop`, then `~/katapult/scripts/flashtool.py -q`, this lists all CANBUS IDs, in my case mainboard was `0d1445047cdd`  
 
 Flash it:  
-`python3 ~/katapult/scripts/flashtool.py -i can0 -f ~/klipper/out/klipper.bin -u 0d1445047cdd`  
+`~/katapult/scripts/flashtool.py -f ~/klipper/out/klipper.bin -u 0d1445047cdd`  
 
 Note the 1 CANBUS ID that changed here, that's your new mainboard ID:  
-`python3 ~/katapult/scripts/flashtool.py -i can0 -q`  
+`~/katapult/scripts/flashtool.py -q`  
 
 > [!IMPORTANT]  
 > Now, skip to section **Make Klipper Configs for Toolhead and Chamber Heater**
 
-### Method Two
-
-**Mainboard**
-```
-make menuconfig reference:
-STM32H750
-32KiB bootloader offset
-Clock Reference: 25 MHz crystal
-USB to CAN bus bridge (USB on PA11/PA12)
-CAN bus on PB8/PB9
-GPIO pins to set at micro-controller startup: !PE11,!PB0
-These are the aux and exhaust fans. If this isn't set, both of these will come on full blast at boot until Kalico takes control of the board
-```
-
-1. Edit `~/klipper/src/stm32/Kconfig`  
-You will then scroll down until you see bootloader and then scroll down til you see "config STM32_FLASH_START_8000"  
-you will then need to add `MACH_STM32H750` to the end of the line under that as such:
-
-From:  
-`bool "32KiB bootloader" if MACH_STM32F1 || MACH_STM32F2 || MACH_STM32F4 || MACH_STM32F7`  
-To:  
-`bool "32KiB bootloader" if MACH_STM32F1 || MACH_STM32F2 || MACH_STM32F4 || MACH_STM32F7 || MACH_STM32H750`  
-
-Note, this will make Kalico or Klipper repo Dirty.  
-Thanks to wildBill on the discord for this info.  
-
-2. For the mainboard, reference the menuconfig settings above. Then,   
-`cd ~/klipper`, `make menuconfig`, `make clean`, `make`  
-It will save the firmware to `~/klipper/out/klipper.bin`  
-
-3. Use STM32CubeProgrammer to flash the `stm32h750_katapult.bin` file to your mainboard (found [stm32h750_katapult.bin](./recovery/stm32h750_katapult.bin)). Turn off your printer (unplug it too, just in case), hook your st-link up to the boards pins, other end to your computer, full chip erase, open file -> use stm32h750_katapult.bin, "Download" will write the file
-
-4. Upon boot, you can verify with `ls /dev/serial/by-id`, should see something like `usb-katapult_stm32h750xx_1C0027000651333233353131-if00`
-
-5.  Stop Klipper `sudo service klipper stop`, then flash:
-```
-python3 ~/katapult/scripts/flashtool.py -f ~/klipper/out/klipper.bin -d /dev/serial/by-id/usb-katapult_your_board_id
-so for me it was:
-python3 ~/katapult/scripts/flashtool.py -f ~/klipper/out/klipper.bin -d /dev/serial/by-id/usb-katapult_stm32h750xx_1C0027000651333233353131-if00
-```
-
-6.  Verify with:
-``lsusb``
-Should see: ``Bus 008 Device 003: ID 1d50:606f OpenMoko, Inc. Geschwister Schneider CAN adapter``
-
-7. Verify can0 is up, run `ip -s -d link show can0`, it should show `5: can0: <NOARP,UP,LOWER_UP,ECHO> mtu 16 qdisc pfifo_fast state UP mode DEFAULT group default qlen 128`
-
-8. To get your ID for printer.cfg, run: `python3 ~/katapult/scripts/flashtool.py -i can0 -q` and note the new ID.
-
-> [!IMPORTANT]  
 > Carry on to **Make Klipper Configs for Toolhead and Chamber Heater**
 
 ## Make Klipper Configs for Toolhead and Chamber Heater
 
 This is the info to reference when you do `make menuconfig` below.
 
-**Toolhead** 
-```
-make menuconfig reference:
-STM32F103
-8KiB bootloader offset
-Clock Reference: 8 MHz crystal
-CAN bus on PB8/PB9
-```  
+**Toolhead / Chamber Heater** 
 
-**Chamber Heater**
-```
 make menuconfig reference:
+```
 STM32F103
-8KiB bootloader offset
-Clock Reference: 8 MHz crystal
+8KiB deployment offset [optional]
+8 MHz clock
+8KiB application offset
 CAN bus on PB8/PB9
+Balanced Speed/Size (-O2)
 ```  
 
 Credit for this info:  
@@ -324,13 +281,13 @@ Repeat steps to flash for toolhead and then for chamber (REMEMBER TO CHANGE UUID
 It will save the firmware to `~/klipper/out/klipper.bin`  
 
 2. Flash your mainboard:  
-`sudo service klipper stop`, then `python3 ~/katapult/scripts/flashtool.py -i can0 -q`, this lists all CANBUS IDs, in my case toolhead was `61755fe321ac`  
+`sudo service klipper stop`, then `~/katapult/scripts/flashtool.py -q`, this lists all CANBUS IDs, in my case toolhead was `61755fe321ac`  
 
 Flash it:  
-`python3 ~/katapult/scripts/flashtool.py -i can0 -f ~/klipper/out/klipper.bin -u 61755fe321ac`  
+`~/katapult/scripts/flashtool.py -f ~/klipper/out/klipper.bin -u 61755fe321ac`  
 
 Note the 1 CANBUS ID that changed here, that's the ID of the device you just flashed:  
-`python3 ~/katapult/scripts/flashtool.py -i can0 -q`  
+`katapult/scripts/flashtool.py -q`  
 
 If you mess up and forget to check, you can turn the printer off, unplug the toolhead CAN connection, boot it back up, run the query, and the new ID is your chamber heater.  
 Power down, plug toolhead CAN connection back in, query again, and that new ID is your toolhead.  
@@ -385,10 +342,6 @@ Reference my SV08 guide here for general instructions, but **NOTE** that there a
 https://github.com/asnajder/sv08-config/blob/main/README.md
 
 And my zero specific eddy config I suggest you use is found in this repo under `sovol_eddy.cfg`, note, ensure you use software I2C, hardware will not work (if you use my config, it's set up for software I2C)  
-
--No need to edit `ldc1612.py`, it seems to work fine with div=2
-
--You can remove `reg_drive_current: 22` from `[probe_eddy_current my_eddy_probe]`, we will auto calibrate
 
 Additional short form steps:
 ```
