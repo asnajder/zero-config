@@ -504,21 +504,21 @@ Recovery files are available in [recovery](./recovery). These can be flashed wit
 
 
 
-Mainboard pinout ↓
+### Mainboard pinout ↓
 
-![Mainboard pinout](./Mainboard_pinout.png)
-
-
-
-Toolhead pinout ↓
-
-![Toolhead pinout](./Toolhead_pinout.png)
+<img src="./Mainboard_pinout.png" alt="Mainboard pinout" width="500" style="border: 2px solid #999; border-radius: 6px;" />
 
 
 
-Chamber pinout ↓
+### Toolhead pinout ↓
 
-![Chamber pinout](./Chamber_pinout.png)
+<img src="./Toolhead_pinout.png" alt="Toolhead pinout" width="500" style="border: 2px solid #999; border-radius: 6px;" />
+
+
+
+### Chamber pinout ↓
+
+<img src="./Chamber_pinout.png" alt="Chamber pinout" width="500" style="border: 2px solid #999; border-radius: 6px;" />
 
 Also reference [Rappetor's guide (Step 6/Step 7)](https://github.com/Rappetor/Sovol-SV08-Mainline?tab=readme-ov-file#step-6---stock-firmware-backup) 
 
