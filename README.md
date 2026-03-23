@@ -627,7 +627,29 @@ Then restart Klipper and/or the system.
 
 6. Run final tuning (`PID`, `SHAPER_CALIBRATE`, etc.).
 
-7. Print.
+7. Add the fan back to your display (add this in printer.cfg):
+```
+[display_data _default_16x4 fan_generic]
+position: 0, 10
+text: { render("_fan_speed") }
+
+[display_template _fan_speed]
+text:
+  {% if 'fan_generic fan0' in printer %}
+    {% set speed = printer["fan_generic fan0"].speed %}
+    {% if speed %}
+      {% set frame = (printer.toolhead.estimated_print_time|int % 2) + 1 %}
+      ~fan{frame}~
+    {% else %}
+      ~fan1~
+    {% endif %}
+    { "{:>4.0%}".format(speed) }
+  {% endif %}
+  ```
+
+8. Fix knob direction on display: 
+Under `[display]`, change `encoder_pins: ^EXP2_5, ^EXP2_3` to `encoder_pins: ^EXP2_3, ^EXP2_5`  
+9. Print.
 
 ## Updater Script
 
