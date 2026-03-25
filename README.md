@@ -582,12 +582,12 @@ Short-form calibration flow:
 
 ```gcode
 # Home printer (Z may fail initially, this is expected)
-SET_KINEMATIC_POSITION X=96 Y=76.2 Z=2
+SET_KINEMATIC_POSITION X=96 Y=76.2 Z=20
 # Move to a safe manual height if needed
 LDC_CALIBRATE_DRIVE_CURRENT CHIP=my_eddy_probe
 # SAVE_CONFIG after current is found (mine was 16)
 # Reboot, then:
-SET_KINEMATIC_POSITION X=96 Y=76.2 Z=2
+SET_KINEMATIC_POSITION X=96 Y=76.2 Z=20
 PROBE_EDDY_CURRENT_CALIBRATE CHIP=my_eddy_probe
 # Then do paper test and finalize
 ```
