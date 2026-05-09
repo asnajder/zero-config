@@ -589,7 +589,8 @@ LDC_CALIBRATE_DRIVE_CURRENT CHIP=my_eddy_probe
 # Reboot, then:
 SET_KINEMATIC_POSITION X=96 Y=76.2 Z=20
 PROBE_EDDY_CURRENT_CALIBRATE CHIP=my_eddy_probe
-# Then do paper test and finalize
+# the above command has you do a paper test, I find it's best to do at the bed temp you print at, at least
+# Then follow the tap calibration portion of this guide: https://www.klipper3d.org/Eddy_Probe.html#tap-calibration
 ```
 
 Keep coordinates within Sovol Zero bed bounds.
