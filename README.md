@@ -351,7 +351,7 @@ Mainboard Klipper `make menuconfig` reference:
 ```text
 STM32H743
 25 MHz crystal clock
-8KiB Application offset
+128KiB Application offset
 USB to CAN bus bridge (USB on PA11/PA12) [Klipper]
 CAN bus on PB8/PB9 [Klipper]
 GPIO pins to set at micro-controller startup: !PE11,!PB0
