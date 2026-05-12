@@ -306,7 +306,7 @@ Mainboard Katapult `make menuconfig` reference:
 ```text
 STM32H743
 25 MHz clock
-8KiB Application offset
+128KiB Application offset
 USB on PA11/PA12 [Katapult]
 Balanced Speed/Size (-O2) [Katapult]
 GPIO pins to set at micro-controller startup: !PE11,!PB0
